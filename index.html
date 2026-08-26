@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SahAI - Stress & Trauma Assessment for NHAA 14566</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .sticky-note { transform: rotate(3deg); background: #fef08a; border: 2px solid #fcd34d; }
+        .svi-bar { background: linear-gradient(to right, #10b981, #fbbf24, #f97316, #ef4444); }
+        .badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600; font-size: 0.875rem; }
+        .badge-low { background: #dcfce7; color: #166534; }
+        .badge-moderate { background: #fef3c7; color: #92400e; }
+        .badge-high { background: #fed7aa; color: #92400e; }
+        .badge-critical { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div id="landing" class="page active">
+    <!-- Navbar -->
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">SahAI</span>
+            </div>
+            <div class="flex items-center gap-8">
+                <a href="#" class="text-gray-600 hover:text-gray-900">About</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900">How It Works</a>
+                <a href="#" class="text-gray-600 hover:text-gray-900">Resources</a>
+                <button onclick="toggleLanguage()" class="px-4 py-2 text-sm border border-gray-300 rounded-full hover:bg-gray-50">
+                    <span id="lang-toggle">हिन्दी</span>
+                </button>
+                <button onclick="goToPage('consent')" class="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700">
+                    <span id="cta-start">Start Assessment</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-2 gap-12 items-center">
+            <!-- Left: Text -->
+            <div>
+                <p class="text-sm uppercase tracking-widest text-gray-500 font-mono mb-4" id="eyebrow">
+                    // built for 14566 · nhaa
+                </p>
+                <h1 class="text-6xl font-bold leading-tight mb-6">
+                    <span id="headline-1">Real-time Stress</span>
+                    <span class="text-blue-600" id="headline-2">Assessment for Trauma Survivors</span>
+                </h1>
+                <p class="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed" id="description">
+                    SahAI provides intelligent triage support for victims accessing NHAA 14566. Our AI-powered assessment helps route cases by urgency and emotional state, connecting survivors with the right resources.
+                </p>
+                <div class="flex gap-4 mb-6">
+                    <button onclick="goToPage('consent')" class="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 flex items-center gap-2">
+                        <span id="cta-primary">Start Assessment</span> →
+                    </button>
+                    <button onclick="goToPage('dashboard')" class="px-6 py-3 bg-white text-gray-900 border-2 border-gray-300 rounded-full font-semibold hover:bg-gray-50 flex items-center gap-2">
+                        <span id="cta-secondary">View Dashboard</span> →
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600" id="social-proof">
+                    • Smart India Hackathon prototype for NHAA 14566
+                </p>
+            </div>
+
+            <!-- Right: Mock UI Card -->
+            <div class="relative">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-lg">
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <p class="text-sm text-gray-500 mb-2">Live Assessment</p>
+                        <p class="text-sm text-gray-700 line-clamp-3" id="live-text">
+                            "I am very scared and don't know where to go. This happened last week and I haven't slept since..."
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-semibold text-gray-700">Stress Vulnerability Index</span>
+                            <span class="text-lg font-bold text-red-600">72</span>
+                        </div>
+                        <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden svi-bar"></div>
+                        <div class="flex justify-between mt-2 text-xs text-gray-600">
+                            <span>Low</span>
+                            <span>Moderate</span>
+                            <span>High</span>
+                            <span class="text-red-600 font-semibold">Critical</span>
+                        </div>
+                    </div>
+                    <div class="bg-red-100 border border-red-300 rounded p-3">
+                        <p class="text-xs font-semibold text-red-800">
+                            🚨 Flagged for Human Review
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sticky Note -->
+                <div class="sticky-note absolute -top-8 -right-8 p-4 shadow-md transform rotate-3 w-48 border-2">
+                    <div class="absolute -top-2 left-4 w-4 h-4 bg-red-500 rounded-full border border-red-600"></div>
+                    <p class="text-sm font-handwriting text-gray-800" id="sticky">
+                        Built for real people. Real support.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 bg-gray-50 py-8 mt-20">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600" id="footer-text">
+            Student prototype for Smart India Hackathon. Not affiliated with or a substitute for official NHAA 14566 services.
+        </div>
+    </footer>
+</div>
+
+<!-- CONSENT PAGE -->
+<div id="consent" class="page">
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goToPage('landing')">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">SahAI</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+            <h1 class="text-4xl font-bold text-gray-900 mb-6" id="consent-title">Before We Begin</h1>
+
+            <p class="text-lg text-gray-700 mb-8" id="consent-desc">
+                We analyze your description to assess your current stress level and connect you with appropriate support. Your responses are:
+            </p>
+
+            <div class="space-y-4 mb-8 bg-blue-50 rounded-lg p-6 border border-blue-200">
+                <p class="text-gray-700" id="privacy-1">✓ Anonymized—no personal identification stored</p>
+                <p class="text-gray-700" id="privacy-2">✓ Analyzed for emotional intensity and crisis indicators</p>
+                <p class="text-gray-700" id="privacy-3">✓ Used only to recommend appropriate resources</p>
+                <p class="text-gray-700" id="privacy-4">✓ Shared with trained counsellors for follow-up (if you consent)</p>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                <p class="text-sm text-gray-700" id="disclaimer">
+                    <strong>⚠️ Important:</strong> This is a decision-support tool, not a clinical diagnosis. A trained human counsellor will review your case.
+                </p>
+            </div>
+
+            <div class="flex items-start gap-3 mb-8">
+                <input type="checkbox" id="agree" class="w-5 h-5 text-blue-600 rounded cursor-pointer mt-1">
+                <label for="agree" class="text-gray-700 cursor-pointer" id="consent-agree">
+                    I understand and consent to this assessment
+                </label>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-sm font-semibold text-gray-700 mb-2" id="lang-label">Language:</label>
+                <div class="flex gap-2">
+                    <button onclick="setLanguage('en')" class="px-4 py-2 rounded-full text-sm font-semibold bg-blue-600 text-white">
+                        English
+                    </button>
+                    <button onclick="setLanguage('hi')" class="px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        हिन्दी
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="proceedToIntake()" class="flex-1 py-3 px-6 rounded-full font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" id="proceed-btn">
+                    <span id="proceed-text">Proceed to Assessment</span>
+                </button>
+                <button onclick="goToPage('landing')" class="px-6 py-3 rounded-full font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 bg-gray-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600" id="footer-consent">
+            Student prototype for Smart India Hackathon. Not affiliated with official NHAA 14566 services.
+        </div>
+    </footer>
+</div>
+
+<!-- INTAKE PAGE -->
+<div id="intake" class="page">
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goToPage('landing')">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">SahAI</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="max-w-2xl w-full">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4" id="intake-title">Tell Us What's Happening</h1>
+            <p class="text-lg text-gray-600 mb-8" id="intake-subtitle">
+                In your own words, describe your situation. You can type or record a voice note.
+            </p>
+
+            <form onsubmit="submitAssessment(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Your Story</label>
+                    <textarea id="assessment-text" placeholder="Type your situation here... (minimum 20 characters)"
+                        class="w-full h-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        onkeyup="updateCharCount()"></textarea>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <span id="char-count">Characters: 0</span>
+                    </p>
+                </div>
+
+                <div id="error-msg" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 text-sm" style="display:none;"></div>
+
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 py-3 px-6 rounded-full font-semibold bg-blue-600 text-white hover:bg-blue-700">
+                        <span id="submit-btn">Submit Assessment</span>
+                    </button>
+                    <button type="button" class="px-6 py-3 rounded-full font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50">
+                        🎤 <span id="record-text">Record Voice Note</span>
+                    </button>
+                </div>
+
+                <p class="text-sm text-gray-500 text-center">
+                    Minimum 20 characters required for assessment
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 bg-gray-50 py-6">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600" id="footer-intake">
+            Student prototype for Smart India Hackathon.
+        </div>
+    </footer>
+</div>
+
+<!-- RESULTS PAGE -->
+<div id="results" class="page">
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goToPage('landing')">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">SahAI</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="max-w-2xl w-full">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8" id="results-title">Your Assessment Results</h1>
+
+            <!-- SVI Score Card -->
+            <div id="svi-card" class="border-2 rounded-2xl p-8 mb-8">
+                <p class="text-sm font-semibold mb-2">Stress Vulnerability Index</p>
+                <div class="flex items-end gap-4 mb-6">
+                    <span id="svi-score" class="text-6xl font-bold">72</span>
+                    <span class="text-2xl text-gray-600 mb-2">/100</span>
+                </div>
+                <span id="category-badge" class="inline-block px-4 py-2 rounded-full font-semibold"></span>
+            </div>
+
+            <!-- Recommended Action -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Recommended Action:</p>
+                <p id="recommended-action" class="text-lg text-gray-900">
+                    Urgent counsellor consultation + legal aid referral recommended
+                </p>
+            </div>
+
+            <!-- Contributing Factors -->
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Contributing Factors:</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-600 mb-1">Emotional Intensity</p>
+                        <p id="emotion-score" class="text-2xl font-bold text-gray-900">85</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-600 mb-1">Sentiment</p>
+                        <p id="sentiment-score" class="text-2xl font-bold text-gray-900">15</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-600 mb-1">Risk Indicators</p>
+                        <p id="crisis-score" class="text-2xl font-bold text-gray-900">30</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-xs text-gray-600 mb-1">Voice Stress</p>
+                        <p id="voice-score" class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case ID -->
+            <div class="text-sm text-gray-600 mb-8">
+                <p>Case ID: <span id="case-id" class="font-mono text-gray-800">case_a3f2e1b9</span></p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4">
+                <button onclick="goToPage('landing')" class="flex-1 py-3 px-6 rounded-full font-semibold bg-blue-600 text-white hover:bg-blue-700">
+                    Back to Home
+                </button>
+                <button onclick="goToPage('dashboard')" class="flex-1 py-3 px-6 rounded-full font-semibold bg-white text-gray-900 border-2 border-gray-300 hover:bg-gray-50">
+                    View Dashboard
+                </button>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="bg-blue-50 rounded-lg p-6 mt-8 border border-blue-200">
+                <h3 class="font-semibold text-gray-900 mb-3">What happens next?</h3>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li>✓ Your assessment has been securely recorded</li>
+                    <li>✓ A trained counsellor will review your case within 24 hours</li>
+                    <li>✓ You will receive follow-up support via your preferred contact method</li>
+                    <li>✓ All conversations remain confidential and anonymous</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 bg-gray-50 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600" id="footer-results">
+            Student prototype for Smart India Hackathon.
+        </div>
+    </footer>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="dashboard" class="page">
+    <nav class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goToPage('landing')">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">S</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900">SahAI</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="px-6 py-12">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8">Counsellor Case Review</h1>
+
+            <!-- Critical Alert -->
+            <div id="critical-alert" class="bg-red-100 border-2 border-red-300 rounded-lg p-4 mb-8 flex items-center gap-3">
+                <span class="text-2xl">🚨</span>
+                <div>
+                    <p class="font-semibold text-red-900">Critical Cases Requiring Review:</p>
+                    <p id="critical-count" class="text-red-800">1 critical case(s) requiring immediate review</p>
+                </div>
+            </div>
+
+            <!-- Counsellor Name Input -->
+            <div class="mb-8 flex gap-4 items-end">
+                <div class="flex-1 max-w-xs">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Reviewed by:</label>
+                    <input type="text" id="counsellor-name" placeholder="Enter your name"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button onclick="refreshDashboard()" class="px-6 py-2 bg-white text-gray-700 border-2 border-gray-300 rounded-full hover:bg-gray-50">
+                    Refresh
+                </button>
+            </div>
+
+            <!-- Cases Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="border-b-2 border-gray-300">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Case ID</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Submitted</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Language</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">SVI Score</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Category</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Excerpt</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Status</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cases-table">
+                        <tr class="border-b border-gray-200 bg-red-50">
+                            <td class="py-3 px-4 font-mono text-sm">case_a3f2e1b9</td>
+                            <td class="py-3 px-4 text-sm">2026-08-25</td>
+                            <td class="py-3 px-4 text-sm">EN</td>
+                            <td class="py-3 px-4 font-bold text-lg">72</td>
+                            <td class="py-3 px-4">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold badge-high">High</span>
+                            </td>
+                            <td class="py-3 px-4 text-sm max-w-xs truncate text-gray-700">
+                                I am very scared and don't know where to go...
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                <span class="text-gray-500">Pending</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <button onclick="markReviewed('case_a3f2e1b9')" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                                    Mark Reviewed
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200 mt-4">
+                <p class="text-gray-600">More cases will appear here as victims submit assessments</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 bg-gray-50 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
+            Student prototype for Smart India Hackathon.
+        </div>
+    </footer>
+</div>
+
+<script>
+    let currentLanguage = 'en';
+    let currentCaseId = 'case_' + Math.random().toString(36).substr(2, 8);
+
+    const translations = {
+        en: {
+            'eyebrow': '// built for 14566 · nhaa',
+            'headline-1': 'Real-time Stress',
+            'headline-2': 'Assessment for Trauma Survivors',
+            'description': 'SahAI provides intelligent triage support for victims accessing NHAA 14566. Our AI-powered assessment helps route cases by urgency and emotional state, connecting survivors with the right resources.',
+            'cta-primary': 'Start Assessment',
+            'cta-secondary': 'View Dashboard',
+            'cta-start': 'Start Assessment',
+            'social-proof': '• Smart India Hackathon prototype for NHAA 14566',
+            'sticky': 'Built for real people. Real support.',
+            'footer-text': 'Student prototype for Smart India Hackathon. Not affiliated with or a substitute for official NHAA 14566 services.',
+            'consent-title': 'Before We Begin',
+            'consent-desc': 'We analyze your description to assess your current stress level and connect you with appropriate support. Your responses are:',
+            'privacy-1': '✓ Anonymized—no personal identification stored',
+            'privacy-2': '✓ Analyzed for emotional intensity and crisis indicators',
+            'privacy-3': '✓ Used only to recommend appropriate resources',
+            'privacy-4': '✓ Shared with trained counsellors for follow-up (if you consent)',
+            'disclaimer': '⚠️ Important: This is a decision-support tool, not a clinical diagnosis. A trained human counsellor will review your case.',
+            'consent-agree': 'I understand and consent to this assessment',
+            'lang-label': 'Language:',
+            'proceed-text': 'Proceed to Assessment',
+            'intake-title': 'Tell Us What\'s Happening',
+            'intake-subtitle': 'In your own words, describe your situation. You can type or record a voice note.',
+            'record-text': 'Record Voice Note',
+            'submit-btn': 'Submit Assessment',
+            'results-title': 'Your Assessment Results',
+            'recommended-action': 'Urgent counsellor consultation + legal aid referral recommended',
+            'lang-toggle': 'हिन्दी',
+        },
+        hi: {
+            'eyebrow': '// 14566 · nhaa के लिए बनाया गया',
+            'headline-1': 'रीयल-टाइम तनाव',
+            'headline-2': 'आघात से बचे लोगों के लिए मूल्यांकन',
+            'description': 'SahAI NHAA 14566 को एक्सेस करने वाले पीड़ितों के लिए बुद्धिमान ट्रिएज समर्थन प्रदान करता है। हमारा AI-संचालित मूल्यांकन केसों को आपातकालीनता और भावनात्मक स्थिति के आधार पर रूट करने में मदद करता है।',
+            'cta-primary': 'मूल्यांकन शुरू करें',
+            'cta-secondary': 'डैशबोर्ड देखें',
+            'cta-start': 'मूल्यांकन शुरू करें',
+            'social-proof': '• स्मार्ट इंडिया हैकथॉन प्रोटोटाइप NHAA 14566 के लिए',
+            'sticky': 'असली लोगों के लिए बनाया गया। असली समर्थन।',
+            'footer-text': 'स्मार्ट इंडिया हैकथॉन के लिए छात्र प्रोटोटाइप। NHAA 14566 की आधिकारिक सेवाओं के साथ संबद्ध नहीं।',
+            'consent-title': 'शुरुआत से पहले',
+            'consent-desc': 'हम आपके विवरण का विश्लेषण करते हैं आपके वर्तमान तनाव स्तर का आकलन करने के लिए। आपकी प्रतिक्रियाएं हैं:',
+            'privacy-1': '✓ गुमनाम—कोई व्यक्तिगत पहचान संग्रहीत नहीं',
+            'privacy-2': '✓ भावनात्मक तीव्रता के लिए विश्लेषण किया',
+            'privacy-3': '✓ केवल उचित संसाधनों की सिफारिश के लिए उपयोग किया',
+            'privacy-4': '✓ प्रशिक्षित परामर्शदाताओं के साथ साझा किया (यदि आप सहमति देते हैं)',
+            'disclaimer': '⚠️ महत्वपूर्ण: यह एक निर्णय-समर्थन उपकरण है, नैदानिक निदान नहीं। एक प्रशिक्षित मानव परामर्शदाता आपके केस की समीक्षा करेगा।',
+            'consent-agree': 'मैं इस मूल्यांकन को समझता हूँ और सहमत हूँ',
+            'lang-label': 'भाषा:',
+            'proceed-text': 'मूल्यांकन के लिए आगे बढ़ें',
+            'intake-title': 'बताएं कि क्या हो रहा है',
+            'intake-subtitle': 'अपने शब्दों में, अपनी स्थिति बताएं। आप टाइप कर सकते हैं या वॉयस नोट रिकॉर्ड कर सकते हैं।',
+            'record-text': 'वॉयस नोट रिकॉर्ड करें',
+            'submit-btn': 'मूल्यांकन सबमिट करें',
+            'results-title': 'आपके मूल्यांकन परिणाम',
+            'recommended-action': 'तत्काल परामर्शदाता परामर्श + कानूनी सहायता रेफरल अनुशंसित',
+            'lang-toggle': 'English',
+        }
+    };
+
+    function translate(key) {
+        return translations[currentLanguage][key] || translations['en'][key] || '';
+    }
+
+    function updateAllText() {
+        Object.keys(translations[currentLanguage]).forEach(key => {
+            const elem = document.getElementById(key);
+            if (elem) {
+                elem.textContent = translations[currentLanguage][key];
+            }
+        });
+    }
+
+    function goToPage(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(page).classList.add('active');
+    }
+
+    function toggleLanguage() {
+        currentLanguage = currentLanguage === 'en' ? 'hi' : 'en';
+        updateAllText();
+    }
+
+    function setLanguage(lang) {
+        currentLanguage = lang;
+        updateAllText();
+    }
+
+    function updateCharCount() {
+        const text = document.getElementById('assessment-text').value;
+        document.getElementById('char-count').textContent = `Characters: ${text.length}`;
+    }
+
+    function proceedToIntake() {
+        const agree = document.getElementById('agree').checked;
+        if (!agree) {
+            alert('Please check the consent checkbox');
+            return;
+        }
+        goToPage('intake');
+    }
+
+    function submitAssessment(e) {
+        e.preventDefault();
+        const text = document.getElementById('assessment-text').value;
+
+        if (text.length < 20) {
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('error-msg').textContent = 'Please provide at least 20 characters';
+            return;
+        }
+
+        // Calculate SVI based on text
+        const svi = calculateSVI(text);
+        currentCaseId = 'case_' + Math.random().toString(36).substr(2, 8);
+
+        // Show results
+        showResults(svi);
+        goToPage('results');
+    }
+
+    function calculateSVI(text) {
+        // Simulate SVI calculation
+        const sentimentScore = Math.random() * 30; // 0-30
+        const emotionScore = 50 + Math.random() * 50; // 50-100 (high emotion)
+        const crisisScore = Math.random() * 40; // 0-40
+
+        const svi = (sentimentScore * 0.35 + emotionScore * 0.30 + crisisScore * 0.25);
+        return Math.min(100, Math.max(0, svi));
+    }
+
+    function showResults(svi) {
+        const category = svi < 25 ? 'Low' : svi < 50 ? 'Moderate' : svi < 75 ? 'High' : 'Critical';
+        const categoryColors = {
+            'Low': 'badge-low',
+            'Moderate': 'badge-moderate',
+            'High': 'badge-high',
+            'Critical': 'badge-critical'
+        };
+        const cardColors = {
+            'Low': 'bg-green-50 border-green-200',
+            'Moderate': 'bg-yellow-50 border-yellow-200',
+            'High': 'bg-orange-50 border-orange-200',
+            'Critical': 'bg-red-50 border-red-200'
+        };
+
+        document.getElementById('svi-score').textContent = svi.toFixed(1);
+        document.getElementById('category-badge').className = 'badge ' + categoryColors[category];
+        document.getElementById('category-badge').textContent = category + ' Risk';
+        document.getElementById('svi-card').className = 'border-2 rounded-2xl p-8 mb-8 ' + cardColors[category];
+
+        document.getElementById('emotion-score').textContent = (50 + Math.random() * 50).toFixed(0);
+        document.getElementById('sentiment-score').textContent = (Math.random() * 30).toFixed(0);
+        document.getElementById('crisis-score').textContent = (Math.random() * 40).toFixed(0);
+        document.getElementById('case-id').textContent = currentCaseId;
+    }
+
+    function markReviewed(caseId) {
+        const name = document.getElementById('counsellor-name').value;
+        if (!name) {
+            alert('Please enter your name');
+            return;
+        }
+
+        // Update table
+        const row = document.querySelector(`[data-case-id="${caseId}"]`);
+        if (row) {
+            row.querySelector('[data-status]').textContent = '✓ Reviewed';
+            row.querySelector('[data-action] button').style.display = 'none';
+        }
+
+        alert(`Case ${caseId} marked as reviewed by ${name}`);
+    }
+
+    function refreshDashboard() {
+        alert('Dashboard refreshed');
+    }
+
+    // Initialize
+    updateAllText();
+</script>
+
+</body>
+</html>
