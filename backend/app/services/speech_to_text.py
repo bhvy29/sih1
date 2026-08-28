@@ -1,55 +1,28 @@
 """
-Speech-to-Text Service
+Speech-to-Text Service (STUB)
 
-Transcribes voice audio to text using OpenAI's Whisper API.
-Accepts raw audio bytes (matches the calling signature in routes/intake.py,
-which decodes audio_base64 into bytes before calling this function).
+Voice-to-text is now handled CLIENT-SIDE in the browser via the Web Speech
+API (see frontend/src/hooks/useSpeechToText.js) — free, no API key needed,
+no audio ever leaves the user's device for transcription purposes.
+
+This backend function is kept only as a stub so that intake.py's
+audio_base64 code path (an alternate/legacy path where raw audio bytes are
+sent to the backend) doesn't crash on import or on call. It is not currently
+used by the actual demo flow. If server-side transcription is needed later
+(e.g. for a mobile app that can't use the browser API), a real ASR
+integration (Whisper, Google Speech-to-Text, etc.) can be wired in here.
 """
-
-import os
-import io
-from openai import OpenAI
-
-# Initialize client lazily to avoid errors during import if key is missing
-client = None
-
-def _get_client():
-    global client
-    if client is None:
-        api_key = os.getenv("OPENAI_API_KEY", "sk-dummy-key-for-testing")
-        client = OpenAI(api_key=api_key)
-    return client
 
 
 def transcribe_audio(audio_bytes: bytes) -> str:
     """
-    Transcribe raw audio bytes to text using Whisper.
+    Stub transcription function. Real transcription happens client-side.
 
     Args:
-        audio_bytes: Raw audio file bytes (e.g. webm/wav/mp3 from browser recording)
+        audio_bytes: Raw audio file bytes (unused by this stub)
 
     Returns:
-        Transcribed text string.
-
-    NOTE: audio_bytes is never written to persistent disk storage here — it's
-    wrapped in an in-memory buffer, sent to the Whisper API, and discarded once
-    this function returns. This matches the privacy requirement in intake.py
-    (no raw audio retained after transcription/analysis).
+        Placeholder string — this path is not exercised by the current
+        frontend, which sends already-transcribed text instead.
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        # Fallback so the demo doesn't crash if the key isn't configured yet
-        return "[Mock transcript — OPENAI_API_KEY not configured]"
-
-    # Whisper's API needs a file-like object with a name attribute (for format detection)
-    audio_buffer = io.BytesIO(audio_bytes)
-    audio_buffer.name = "recording.webm"  # extension hints the format to the API
-
-    try:
-        client = _get_client()
-        result = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_buffer,
-        )
-        return result.text
-    except Exception as e:
-        raise RuntimeError(f"Whisper transcription failed: {str(e)}")
+    return "[Voice transcription is handled client-side in the browser; this backend path is currently a stub]"
