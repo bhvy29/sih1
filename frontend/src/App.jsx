@@ -7,6 +7,9 @@ const ConsentScreen = lazy(() => import('./pages/ConsentScreen'));
 const IntakeFlow = lazy(() => import('./pages/IntakeFlow'));
 const AssessmentResults = lazy(() => import('./pages/AssessmentResults'));
 const CounsellorDashboard = lazy(() => import('./pages/CounsellorDashboard'));
+const About = lazy(() => import('./pages/About'));
+const HowItWorks = lazy(() => import('./pages/HowItWorks'));
+const Resources = lazy(() => import('./pages/Resources'));
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
           <Route path="/intake" element={<IntakeFlow />} />
           <Route path="/results/:caseId" element={<AssessmentResults />} />
           <Route path="/dashboard" element={<CounsellorDashboard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/resources" element={<Resources />} />
         </Routes>
       </Suspense>
     </Router>
