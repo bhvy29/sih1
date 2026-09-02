@@ -10,6 +10,8 @@ const CounsellorDashboard = lazy(() => import('./pages/CounsellorDashboard'));
 const About = lazy(() => import('./pages/About'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Resources = lazy(() => import('./pages/Resources'));
+const PsychiatristLogin = lazy(() => import('./pages/PsychiatristLogin'));
+const PsychiatristDashboard = lazy(() => import('./pages/PsychiatristDashboard'));
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/psychiatrist/login" element={<PsychiatristLogin />} />
+          <Route path="/psychiatrist/dashboard" element={<PsychiatristDashboard />} />
         </Routes>
       </Suspense>
     </Router>

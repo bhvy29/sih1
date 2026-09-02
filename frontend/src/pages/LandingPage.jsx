@@ -67,6 +67,12 @@ export default function LandingPage() {
               {i18n.language === "en" ? "हिन्दी" : "English"}
             </button>
             <button
+              onClick={() => navigate("/psychiatrist/login")}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
+            >
+              Psychiatrist Portal
+            </button>
+            <button
               onClick={() => navigate("/consent")}
               className="btn-primary"
             >

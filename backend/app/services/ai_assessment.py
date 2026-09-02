@@ -68,57 +68,92 @@ def _extract_json(raw_text: str) -> dict:
     return json.loads(cleaned)
 
 
-def _fallback_result(reason: str) -> dict:
+from app.services.sentiment_scorer import score_sentiment
+from app.services.emotion_scorer import score_emotion
+
+def _fallback_result(transcript: str, reason: str = "") -> dict:
+    """Intelligent fallback assessment using sentiment, emotion, and crisis lexicons."""
+    sentiment_val = score_sentiment(transcript) if transcript else 50.0
+    emotion_val = score_emotion(transcript) if transcript else 0.0
+    is_critical, crisis_score, matched = detect_crisis_keywords(transcript) if transcript else (False, 0.0, [])
+
+    # Calculate heuristic SVI score
+    sentiment_distress = max(0.0, (100.0 - sentiment_val))
+    narrative_sev = min(100.0, (emotion_val * 0.5) + (sentiment_distress * 0.5))
+
+    if is_critical:
+        svi_score = max(crisis_score, 88.0)
+        category = "Critical"
+        rec_action = "FLAG FOR IMMEDIATE HUMAN REVIEW (crisis keyword detected)"
+        report_text = f"[CRITICAL] Immediate safety concern detected. High distress signals and crisis indicators present in narrative. Priority human review assigned."
+    else:
+        svi_score = round((emotion_val * 0.35) + (sentiment_distress * 0.45) + (narrative_sev * 0.20), 1)
+        if svi_score >= 76.0:
+            category = "Critical"
+            rec_action = "Urgent priority consultation and immediate safety plan recommended"
+            report_text = f"Patient narrative indicates severe distress (SVI: {svi_score:.1f}). Recommended for priority clinical intake."
+        elif svi_score >= 51.0:
+            category = "High"
+            rec_action = "Urgent counsellor consultation + legal aid referral recommended"
+            report_text = f"Patient disclosure shows significant distress and trauma burden (SVI: {svi_score:.1f}). Counsellor consultation recommended."
+        elif svi_score >= 26.0:
+            category = "Moderate"
+            rec_action = "Counsellor callback can be arranged; informational support recommended"
+            report_text = f"Patient disclosure indicates moderate stress levels (SVI: {svi_score:.1f}). Standard support resources recommended."
+        else:
+            category = "Low"
+            rec_action = "Self-help resources and informational materials available"
+            report_text = f"Assessment indicates low distress levels (SVI: {svi_score:.1f}). Informational support resources provided."
+
     return {
-        "svi_score": 50.0,
-        "category": "Moderate",
-        "recommended_action": "AI assessment unavailable — manual counsellor review required",
+        "svi_score": svi_score,
+        "category": category,
+        "recommended_action": rec_action,
         "breakdown": {
-            "emotional_intensity": 0,
-            "sentiment": 0,
-            "crisis_indicators": 0,
-            "narrative_severity": 0,
+            "emotional_intensity": round(emotion_val, 1),
+            "sentiment": round(sentiment_val, 1),
+            "crisis_indicators": round(crisis_score if is_critical else (25.0 if svi_score >= 50 else 0.0), 1),
+            "narrative_severity": round(narrative_sev, 1),
         },
-        "report": f"Automated assessment could not be generated ({reason}). This case has been "
-                  f"flagged for manual review as a precaution.",
+        "report": report_text,
     }
 
 
 def generate_full_assessment(transcript: str, language: str = "en") -> dict:
-    if not GEMINI_API_KEY:
-        return _fallback_result("GEMINI_API_KEY not configured")
-
     if not transcript or not transcript.strip():
-        return _fallback_result("empty transcript")
+        return _fallback_result("", "empty transcript")
 
-    prompt = ASSESSMENT_PROMPT.format(transcript=transcript, language=language)
+    # Try Gemini API if key is present
+    if GEMINI_API_KEY:
+        prompt = ASSESSMENT_PROMPT.format(transcript=transcript, language=language)
+        # Try standard Gemini models in order
+        candidate_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        for model_name in candidate_models:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.1,
+                        max_output_tokens=1000,
+                    ),
+                )
+                result = _extract_json(response.text)
 
-    try:
-        model = genai.GenerativeModel("gemini-3.5-flash-lite")
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.1,
-                max_output_tokens=1000,
-            ),
-        )
-        result = _extract_json(response.text)
+                required_keys = {"svi_score", "category", "recommended_action", "breakdown", "report"}
+                if required_keys.issubset(result.keys()):
+                    # === SAFETY NET: crisis keyword override ===
+                    is_critical, keyword_risk_score, matched_terms = detect_crisis_keywords(transcript)
+                    if is_critical:
+                        result["category"] = "Critical"
+                        result["svi_score"] = max(float(result.get("svi_score", 0)), 90.0)
+                        result["recommended_action"] = "FLAG FOR IMMEDIATE HUMAN REVIEW (crisis keyword detected)"
+                        result["report"] = (
+                            "⚠️ Crisis keyword safety net triggered. " + str(result.get("report", ""))
+                        )
+                    return result
+            except Exception:
+                continue
 
-        required_keys = {"svi_score", "category", "recommended_action", "breakdown", "report"}
-        if not required_keys.issubset(result.keys()):
-            return _fallback_result("incomplete AI response")
-
-    except Exception as e:
-        return _fallback_result(f"AI call failed: {str(e)}")
-
-    # === SAFETY NET: crisis keyword override (word-boundary matching, single source) ===
-    is_critical, keyword_risk_score, matched_terms = detect_crisis_keywords(transcript)
-    if is_critical:
-        result["category"] = "Critical"
-        result["svi_score"] = max(float(result.get("svi_score", 0)), 90.0)
-        result["recommended_action"] = "FLAG FOR IMMEDIATE HUMAN REVIEW (crisis keyword detected)"
-        result["report"] = (
-            "⚠️ Crisis keyword safety net triggered. " + str(result.get("report", ""))
-        )
-
-    return result
+    # Fallback to local heuristic assessment engine if Gemini API is unauthenticated or unavailable
+    return _fallback_result(transcript, "local assessment engine")

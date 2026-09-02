@@ -100,12 +100,18 @@ export default function CounsellorDashboard() {
             </div>
             <span className="text-xl font-bold text-gray-900">SahAI</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <button
               onClick={() => navigate('/')}
               className="text-gray-600 hover:text-gray-900"
             >
               Home
+            </button>
+            <button
+              onClick={() => navigate('/psychiatrist/login')}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
+            >
+              Psychiatrist Portal
             </button>
           </div>
         </div>

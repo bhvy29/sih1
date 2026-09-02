@@ -30,12 +30,23 @@ export default function ConsentScreen() {
             </div>
             <span className="text-xl font-bold text-gray-900">SahAI</span>
           </div>
-          <button
-            onClick={toggleLanguage}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-full hover:bg-gray-50"
-          >
-            {i18n.language === 'en' ? 'हिन्दी' : 'English'}
-          </button>
+          <div className="flex items-center gap-6">
+            <button onClick={() => navigate('/')} className="text-gray-600 hover:text-gray-900">
+              Home
+            </button>
+            <button
+              onClick={() => navigate('/psychiatrist/login')}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
+            >
+              Psychiatrist Portal
+            </button>
+            <button
+              onClick={toggleLanguage}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-full hover:bg-gray-50"
+            >
+              {i18n.language === 'en' ? 'हिन्दी' : 'English'}
+            </button>
+          </div>
         </div>
       </nav>
 

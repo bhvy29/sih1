@@ -12,6 +12,7 @@ from app.database.models import Case
 from app.services.ai_assessment import generate_full_assessment
 from app.services.speech_to_text import transcribe_audio
 from app.services.voice_analyzer import analyze_voice
+from app.services.psychiatrist_service import process_patient_routing
 from app.utils.anonymize import generate_case_id, mask_transcript_excerpt
 from app.utils.logger import log_event
 import base64
@@ -34,6 +35,7 @@ class AssessmentResponse(BaseModel):
     recommended_action: str
     analysis_breakdown: dict
     ai_report: str = None  # Gemini-generated human-readable case summary
+    is_critical: bool = False  # Flagged for psychiatrist queue if True
 
 
 @router.post("/assess", response_model=AssessmentResponse)
@@ -144,12 +146,17 @@ async def submit_assessment(
     db.commit()
     db.refresh(case)
 
+    # Trigger Psychiatrist Connect routing hook (non-destructive side effect)
+    routing_result = process_patient_routing(case_id, assessment["svi_score"], assessment["category"], db)
+    is_critical = routing_result.get("is_critical", False)
+
     log_event(
         "assessment_submitted",
         {
             "case_id": case_id,
             "category": assessment["category"],
             "svi_score": assessment["svi_score"],
+            "is_critical": is_critical,
             "client_ip": client_ip,
         },
     )
@@ -161,6 +168,7 @@ async def submit_assessment(
         recommended_action=assessment["recommended_action"],
         analysis_breakdown=assessment["breakdown"],
         ai_report=assessment["report"],
+        is_critical=is_critical,
     )
 
 

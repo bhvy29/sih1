@@ -8,9 +8,10 @@ Main application entry point. Initializes FastAPI, middleware, routes, and datab
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import FRONTEND_URL, DEBUG
-from app.routes import intake, dashboard
+from app.routes import intake, dashboard, psychiatrist, chat
 from app.database.db import engine
 from app.database.models import Base
+import app.database.psychiatrist_models  # Ensures psychiatrist models are registered with Base metadata
 
 # Create FastAPI app
 app = FastAPI(
@@ -39,6 +40,8 @@ async def startup():
 # Register routes
 app.include_router(intake.router)
 app.include_router(dashboard.router)
+app.include_router(psychiatrist.router)
+app.include_router(chat.router)
 
 
 @app.get("/")

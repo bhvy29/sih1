@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { apiService } from '../services/api';
-import useSpeechToText from '../hooks/useSpeechToText';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { apiService } from "../services/api";
+import useSpeechToText from "../hooks/useSpeechToText";
 
 export default function IntakeFlow() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const {
     transcript: voiceTranscript,
@@ -33,7 +33,7 @@ export default function IntakeFlow() {
     } else {
       resetTranscript();
       // Use the currently selected app language for recognition
-      const speechLang = i18n.language === 'hi' ? 'hi-IN' : 'en-IN';
+      const speechLang = i18n.language === "hi" ? "hi-IN" : "en-IN";
       startListening(speechLang);
     }
   };
@@ -42,23 +42,20 @@ export default function IntakeFlow() {
     e.preventDefault();
 
     if (text.trim().length < 20) {
-      setError(t('intake.error_too_short'));
+      setError(t("intake.error_too_short"));
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const result = await apiService.submitAssessment(
-        text,
-        i18n.language
-      );
+      const result = await apiService.submitAssessment(text, i18n.language);
       // Navigate to results page with case data
       navigate(`/results/${result.case_id}`, { state: { result } });
     } catch (err) {
-      setError(t('common.error'));
-      console.error('Assessment failed:', err);
+      setError(t("common.error"));
+      console.error("Assessment failed:", err);
     } finally {
       setLoading(false);
     }
@@ -75,12 +72,20 @@ export default function IntakeFlow() {
             </div>
             <span className="text-xl font-bold text-gray-900">SahAI</span>
           </div>
-          <button
-            onClick={() => navigate('/')}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            Home
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => navigate("/")}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => navigate("/psychiatrist/login")}
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
+            >
+              Psychiatrist Portal
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -88,11 +93,9 @@ export default function IntakeFlow() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-2xl w-full">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {t('intake.title')}
+            {t("intake.title")}
           </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            {t('intake.subtitle')}
-          </p>
+          <p className="text-lg text-gray-600 mb-8">{t("intake.subtitle")}</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Text Input */}
@@ -111,15 +114,16 @@ export default function IntakeFlow() {
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={t('intake.text_placeholder')}
+                placeholder={t("intake.text_placeholder")}
                 className="w-full h-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
               <p className="text-sm text-gray-600 mt-2">
-                {t('intake.char_count', { count: text.length })}
+                {t("intake.char_count", { count: text.length })}
               </p>
               {!speechSupported && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Voice input isn't supported in this browser — try Chrome or Edge.
+                  Voice input isn't supported in this browser — try Chrome or
+                  Edge.
                 </p>
               )}
             </div>
@@ -138,14 +142,14 @@ export default function IntakeFlow() {
                 disabled={loading}
                 className="flex-1 btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? t('common.loading') : t('intake.submit')}
+                {loading ? t("common.loading") : t("intake.submit")}
               </button>
               <button
                 type="button"
                 onClick={handleVoiceButtonClick}
                 disabled={!speechSupported}
                 className={`btn-secondary px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  listening ? 'bg-red-50 border-red-300 text-red-700' : ''
+                  listening ? "bg-red-50 border-red-300 text-red-700" : ""
                 }`}
               >
                 {listening ? '⏹ Stop recording' : `🎤 ${t('intake.record_voice')}`}
@@ -162,7 +166,7 @@ export default function IntakeFlow() {
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-gray-50 py-6">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
-          <p>{t('footer.disclaimer')}</p>
+          <p>{t("footer.disclaimer")}</p>
         </div>
       </footer>
     </div>

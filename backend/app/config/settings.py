@@ -36,6 +36,10 @@ CRISIS_KEYWORDS_PATH = os.path.join(
 # ===== Logging & Debug =====
 DEBUG = os.getenv("DEBUG", "true").lower() == "true"
 
+# ===== Psychiatrist Connect Feature Config =====
+ENABLE_PSYCHIATRIST_MODULE = os.getenv("ENABLE_PSYCHIATRIST_MODULE", "true").lower() == "true"
+CRITICAL_THRESHOLD = float(os.getenv("CRITICAL_THRESHOLD", "76.0"))
+
 # ===== Frontend/Backend URLs (for CORS) =====
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
